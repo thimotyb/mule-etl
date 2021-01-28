@@ -44,4 +44,5 @@ type derby_export = Array<{|  id: String,   nominativo: String,   occupazione: S
       </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
+  <types:enrichment select="#017d2ee1-624a-4e20-8f22-b0a19fedbdb3"/>
 </types:mule>
