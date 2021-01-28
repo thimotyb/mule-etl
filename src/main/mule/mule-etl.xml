@@ -47,13 +47,18 @@ VALUES (:id, :nominativo, :occupazione, :livello, :cap, :residenza)]]></db:sql>
 			</db:bulk-insert>
 		</foreach>
 	</flow>
-	<flow name="syncDBFlow" doc:id="b9698553-2127-4b58-9372-257978b94550" initialState="stopped">
+	<flow name="syncDBFlow" doc:id="b9698553-2127-4b58-9372-257978b94550">
 		<db:listener doc:name="On Table Row DIPENDENTI" doc:id="684a923b-6fa6-40dd-b34e-99b897d18153" config-ref="Database_Config_Derby" table="DIPENDENTI" watermarkColumn="ID" idColumn="ID">
 			<scheduling-strategy >
-				<fixed-frequency />
+				<fixed-frequency frequency="5000"/>
 			</scheduling-strategy>
 		</db:listener>
 		<logger level="INFO" doc:name="Logger" doc:id="f6f5ad2d-01eb-4576-b9d3-13810c306b63" message="#[payload]"/>
+		<file:write doc:name="Write data" doc:id="6107e80b-2e63-4a40-bfdd-05fc44e4fb61" config-ref="File_Config_TestFolder" path="C:\test\processed\export.json" mode="APPEND">
+			<file:content ><![CDATA[#[output application/json
+---
+payload]]]></file:content>
+		</file:write>
 	</flow>
 	<flow name="getAllDipendenti" doc:id="2ac9f818-0ca0-4579-b9e9-03dd4777469d" >
 		<http:listener doc:name="GET /dipendenti" doc:id="df89a117-4232-4ee5-a755-b650562ce82a" config-ref="HTTP_Listener_config" path="/dipendenti" allowedMethods="GET"/>
