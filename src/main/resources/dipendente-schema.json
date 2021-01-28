@@ -1,0 +1,33 @@
+{
+  "$id": "https://example.com/person.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dipendente",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "id dipendente"
+    },
+    "nominativo": {
+      "type": "string",
+      "description": "Nome e Cognome del dipendente"
+    },
+    "occupazione": {
+      "description": "Lavoro svolto",
+      "type": "string"
+    },
+    "livello": {
+      "description": "Livello salariale",
+      "type": "integer",
+      "minimum": 0
+    },
+    "cap": {
+      "description": "Codice Avviamento Postale.",
+      "type": "string"
+    },
+    "residenza": {
+      "description": "Comune di residenza.",
+      "type": "string"
+    }
+  }
+}

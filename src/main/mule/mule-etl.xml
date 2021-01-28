@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
 	<flow name="importCsvFlow" doc:id="c56b0203-96a9-4bb2-a5a4-af8e3520529e" >
 		<file:listener doc:name="import.csv" doc:id="dd1b8493-2ca6-4278-bfd8-7299fe7696b0" config-ref="File_Config_TestFolder" directory="C:\test\incoming" moveToDirectory="C:\test\processed">
 			<scheduling-strategy >
@@ -59,6 +60,46 @@ VALUES (:id, :nominativo, :occupazione, :livello, :cap, :residenza)]]></db:sql>
 ---
 payload]]]></file:content>
 		</file:write>
+	</flow>
+	<flow name="postDipendente" doc:id="0e6592b9-20d1-433a-ab6b-0c9ac1935007" >
+		<http:listener doc:name="POST /dipendenti" doc:id="e791b8ce-f664-4de5-9eba-3b338bbde172" config-ref="HTTP_Listener_config" path="/dipendenti" allowedMethods="POST">
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<json:validate-schema doc:name="Validate schema " doc:id="cdba67f0-5e44-4bda-8537-61bd3e6fc615" schema="dipendente-schema.json"/>
+		<db:insert doc:name="Insert into DIPENDENTI" doc:id="d8c1ae7f-5465-4cb4-a4ea-1b786bca7d04" config-ref="Database_Config_Derby">
+			<db:sql ><![CDATA[INSERT INTO DIPENDENTI(id, nominativo, occupazione, livello, cap, residenza) 
+VALUES (:id, :nominativo, :occupazione, :livello, :cap, :residenza)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+		</db:insert>
+		<set-payload value="Record inserito con successo." doc:name="Set Payload" doc:id="eee3b0da-d50c-4b08-a290-9296eb1c2679" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1bbd2cbf-14de-4db6-8f2e-af22f43b2366" type="JSON:INVALID_INPUT_JSON, JSON:INVALID_SCHEMA, JSON:SCHEMA_NOT_FOUND, JSON:SCHEMA_NOT_HONOURED">
+				<ee:transform doc:name="Transform Message" doc:id="ced5a232-af69-44d6-b3ef-24529a99a086" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Il formato JSON dei dati non è corretto." ++ error.description as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5476b1a3-f6a3-4a4c-933a-23e2172b9ec7" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="e0fd3420-94af-4b99-b8dd-fa80ef5626a5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Impossibile inserire record: " ++ error.description as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="getAllDipendenti" doc:id="2ac9f818-0ca0-4579-b9e9-03dd4777469d" >
 		<http:listener doc:name="GET /dipendenti" doc:id="df89a117-4232-4ee5-a755-b650562ce82a" config-ref="HTTP_Listener_config" path="/dipendenti" allowedMethods="GET"/>
