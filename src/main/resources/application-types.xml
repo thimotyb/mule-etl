@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="import-csv" format="csv">
+      <types:shape format="weave" example="import.csv"><![CDATA[%dw 2.0
+
+type import_csv = Array<{|  id: String,   nome: String,   cognome: String,   categoria: String,   livello: String,   compenso: Number,   cap: String,   citta: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="derby-export" format="csv">
+      <types:shape format="weave" example="import.csv"><![CDATA[%dw 2.0
+
+type derby_export = Array<{|  nominativo: String,   occupazione: String,   livello: String,   cap: String,   residenza: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#7be83466-64bf-4bce-a3e3-47871a5631af">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="import-csv"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="derby-export"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
