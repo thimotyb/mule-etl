@@ -18,7 +18,7 @@ type import_csv = Array<{|  id: String,   nome: String,   cognome: String,   cat
     <types:type name="derby-export" format="csv">
       <types:shape format="weave" example="import.csv"><![CDATA[%dw 2.0
 
-type derby_export = Array<{|  nominativo: String,   occupazione: String,   livello: String,   cap: String,   residenza: String|}> {"isQuotedString": "false",
+type derby_export = Array<{|  id: String,   nominativo: String,   occupazione: String,   livello: String,   cap: String,   residenza: String|}> {"isQuotedString": "false",
 "header": "true",
 "headerLineNumber": "0"}
 
